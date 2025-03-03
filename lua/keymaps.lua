@@ -45,4 +45,14 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 	end,
 })
 
+-- Switch between light and dark mode
+vim.keymap.set("n", "<leader>ut", function()
+  if vim.o.background == "dark" then
+    vim.o.background = "light"
+  else
+    vim.o.background = "dark"
+  end
+  print("Switched to " .. vim.o.background .. " mode")
+end, { desc = "Toggle Light/Dark Mode" })
+
 -- vim: ts=2 sts=2 sw=2 et
