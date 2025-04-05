@@ -9,7 +9,7 @@ return {
 			},
 		},
 		init = function()
-			vim.cmd("colorscheme onedark_vivid") -- apply the collor (set as default)
+			-- vim.cmd("colorscheme onedark_vivid") -- apply the collor (set as default)
 		end,
 	},
 	-- Monokai Pro
@@ -18,7 +18,7 @@ return {
 		lazy = false,
 		priority = 1000,
 		opts = {
-			transparent_background = false,
+			transparent_background = true,
 			terminal_colors = true,
 			devicons = true,
 			styles = {
@@ -52,7 +52,7 @@ return {
 			override = function(_) end,
 		},
 		init = function()
-			-- vim.cmd("colorscheme monokai-pro") -- apply the collor (set as default)
+			vim.cmd("colorscheme monokai-pro") -- apply the collor (set as default)
 		end,
 	},
 	-- Kanagawa Theme
