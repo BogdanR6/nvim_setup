@@ -1,52 +1,54 @@
 -- [[ Setting options ]]
 
 local options = {
-  termguicolors = true, -- Enable terminal colors
-  number = true, -- Enable line numbers
-  relativenumber = true, -- Enable relative line numbers
-  mouse = "a", -- Enable mouse mode, can be useful for resizing splits for example!
-  showmode = false, -- Don't show the mode, since it's already in the status line
-  breakindent = true, -- Enable break indent
-  undofile = true, -- Save undo history
+	termguicolors = true, -- Enable terminal colors
+	number = true, -- Enable line numbers
+	relativenumber = true, -- Enable relative line numbers
+	mouse = "a", -- Enable mouse mode, can be useful for resizing splits for example!
+	showmode = false, -- Don't show the mode, since it's already in the status line
+	breakindent = true, -- Enable break indent
+	undofile = true, -- Save undo history
 
-  -- Case-insensitive searching UNLESS \C or one or more capital letters in the search term
-  ignorecase = true,
-  smartcase = true,
+	wrap = false,
 
-  -- Keep signcolumn on by default
-  signcolumn = "yes",
+	-- Case-insensitive searching UNLESS \C or one or more capital letters in the search term
+	ignorecase = true,
+	smartcase = true,
 
-  -- Decrease update time
-  updatetime = 250,
+	-- Keep signcolumn on by default
+	signcolumn = "yes",
 
-  -- Decrease mapped sequence wait time
-  -- Displays which-key popup sooner
-  timeoutlen = 300,
+	-- Decrease update time
+	updatetime = 250,
 
-  -- Configure how new splits should be opened
-  splitright = true,
-  splitbelow = true,
+	-- Decrease mapped sequence wait time
+	-- Displays which-key popup sooner
+	timeoutlen = 300,
 
-  -- Sets how neovim will display certain whitespace characters in the editor.
-  --  See `:help 'list'`
-  --  and `:help 'listchars'`
-  list = true,
-  listchars = { tab = "  ", trail = " ", nbsp = "␣" },
-  tabstop = 2,
-  shiftwidth = 2,
+	-- Configure how new splits should be opened
+	splitright = true,
+	splitbelow = true,
 
-  -- Preview substitutions live, as you type!
-  inccommand = "split",
+	-- Sets how neovim will display certain whitespace characters in the editor.
+	--  See `:help 'list'`
+	--  and `:help 'listchars'`
+	list = true,
+	listchars = { tab = "  ", trail = " ", nbsp = "␣" },
+	tabstop = 2,
+	shiftwidth = 2,
 
-  -- Show which line your cursor is on
-  cursorline = true,
+	-- Preview substitutions live, as you type!
+	inccommand = "split",
 
-  -- Minimal number of screen lines to keep above and below the cursor.
-  scrolloff = 10,
+	-- Show which line your cursor is on
+	cursorline = true,
+
+	-- Minimal number of screen lines to keep above and below the cursor.
+	scrolloff = 10,
 }
 
 for k, v in pairs(options) do
-  vim.opt[k] = v
+	vim.opt[k] = v
 end
 
 -- Sync clipboard between OS and Neovim.
