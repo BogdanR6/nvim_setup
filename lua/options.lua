@@ -36,6 +36,8 @@ local options = {
 	listchars = { tab = "  ", trail = " ", nbsp = "␣" },
 	tabstop = 2,
 	shiftwidth = 2,
+	softtabstop = 2,
+	expandtab = true,
 
 	-- Preview substitutions live, as you type!
 	inccommand = "split",
@@ -50,6 +52,10 @@ local options = {
 for k, v in pairs(options) do
 	vim.opt[k] = v
 end
+
+vim.cmd([[
+  autocmd FileType cpp,c,h,hpp setlocal tabstop=2 shiftwidth=2 softtabstop=2 expandtab
+]])
 
 -- Sync clipboard between OS and Neovim.
 --  Schedule the setting after `UiEnter` because it can increase startup-time.
