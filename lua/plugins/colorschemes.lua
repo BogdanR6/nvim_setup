@@ -12,6 +12,38 @@ return {
 			-- vim.cmd("colorscheme onedark_vivid") -- apply the collor (set as default)
 		end,
 	},
+	{
+		"ellisonleao/gruvbox.nvim",
+		priority = 1000,
+		config = true,
+		opts = {
+			terminal_colors = true, -- add neovim terminal colors
+			undercurl = true,
+			underline = true,
+			bold = true,
+			italic = {
+				strings = true,
+				emphasis = true,
+				comments = true,
+				operators = false,
+				folds = true,
+			},
+			strikethrough = true,
+			invert_selection = false,
+			invert_signs = false,
+			invert_tabline = false,
+			invert_intend_guides = false,
+			inverse = true, -- invert background for search, diffs, statuslines and errors
+			contrast = "", -- can be "hard", "soft" or empty string
+			palette_overrides = {},
+			overrides = {},
+			dim_inactive = false,
+			transparent_mode = true,
+		},
+		init = function()
+			vim.cmd("colorscheme gruvbox")
+		end,
+	},
 	-- Monokai Pro
 	{
 		"loctvl842/monokai-pro.nvim",
@@ -52,7 +84,7 @@ return {
 			override = function(_) end,
 		},
 		init = function()
-			vim.cmd("colorscheme monokai-pro") -- apply the collor (set as default)
+			-- vim.cmd("colorscheme monokai-pro") -- apply the collor (set as default)
 		end,
 	},
 	-- Kanagawa Theme
@@ -75,9 +107,6 @@ return {
 				palette = {},
 				theme = { wave = {}, lotus = {}, dragon = {}, all = {} },
 			},
-			overrides = function(colors)
-				return {}
-			end,
 			theme = "wave", -- Default theme
 			background = {
 				dark = "dragon",
