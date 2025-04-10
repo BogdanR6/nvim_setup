@@ -4,17 +4,14 @@ require("lazy").setup({
 		{ import = "plugins" },
 	},
 
-	opts = {
-		colorscheme = { "kanagawa" },
-	},
+	opts = {},
 
 	defaults = {
-		lazy = false,    -- not lazy by default
+		lazy = false, -- not lazy by default
 		version = false, -- always use the latest version
 	},
 
 	checker = { enabled = true, notify = false }, -- plugin update checker
-
 }, {
 	ui = {
 		icons = {
@@ -42,7 +39,6 @@ require("lazy").setup({
 				"★",
 				"‒",
 			},
-
 		},
 	},
 })
