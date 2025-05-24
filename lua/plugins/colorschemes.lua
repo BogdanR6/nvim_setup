@@ -1,4 +1,49 @@
 return {
+	-- Edge
+	{
+		"sainnhe/edge",
+		priority = 1000,
+		config = function()
+			vim.g.edge_style = "aura" -- or 'neon'
+			vim.g.edge_enable_italic = 1
+			vim.g.edge_transparent_background = 1
+
+			vim.cmd.colorscheme("edge")
+
+			-- plugin highlight overrides (good for transparency)
+			vim.api.nvim_set_hl(0, "TelescopeNormal", { bg = "none" })
+			vim.api.nvim_set_hl(0, "TelescopeBorder", { fg = "#5c6370", bg = "none" })
+			vim.api.nvim_set_hl(0, "NeoTreeNormal", { bg = "none" })
+			vim.api.nvim_set_hl(0, "NeoTreeNormalNC", { bg = "none" })
+			vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
+			vim.api.nvim_set_hl(0, "NeoTreeFloatTitle", { bg = "none", fg = "#dcdcdc" })
+			vim.api.nvim_set_hl(0, "NeoTreePrompt", { bg = "none", fg = "#dcdcdc" })
+			vim.api.nvim_set_hl(0, "FloatBorder", { bg = "none", fg = "#5c6370" })
+			vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
+		end,
+	},
+	-- Catppuccin
+	{
+		"catppuccin/nvim",
+		name = "catppuccin",
+		priority = 1000,
+		config = function()
+			require("catppuccin").setup({
+				flavour = "mocha",
+				transparent_background = true,
+				integrations = {
+					cmp = true,
+					gitsigns = true,
+					nvimtree = true,
+					treesitter = true,
+					telescope = true,
+				},
+			})
+		end,
+		init = function()
+			-- vim.cmd.colorscheme("catppuccin")
+		end,
+	},
 	-- Onedark Pro
 	{
 		"olimorris/onedarkpro.nvim",
@@ -41,7 +86,7 @@ return {
 			transparent_mode = true,
 		},
 		init = function()
-			vim.cmd("colorscheme gruvbox")
+			-- vim.cmd("colorscheme gruvbox")
 		end,
 	},
 	-- Monokai Pro
