@@ -8,10 +8,34 @@ return {
 			library = {
 				-- Load luvit types when the `vim.uv` word is found
 				{ path = "luvit-meta/library", words = { "vim%.uv" } },
+				"nvim-dap-ui",
 			},
 		},
 	},
 	{ "Bilal2453/luvit-meta", lazy = true },
+	{
+		-- Java LSP/DAP plugin (loaded separately, before lspconfig)
+		"nvim-java/nvim-java",
+		ft = "java", -- Only load for Java files
+		dependencies = {
+			"nvim-java/lua-async-await",
+			"nvim-java/nvim-java-refactor",
+			"nvim-java/nvim-java-core",
+			"nvim-java/nvim-java-test",
+			"nvim-java/nvim-java-dap",
+			"MunifTanjim/nui.nvim",
+			"neovim/nvim-lspconfig",
+			"mfussenegger/nvim-dap",
+		},
+		config = function()
+			require("java").setup({
+				-- Your nvim-java configuration options
+				jdk = {
+					auto_install = false, -- Set to true if you want auto JDK installation
+				},
+			})
+		end,
+	},
 	{
 		-- Main LSP Configuration
 		"neovim/nvim-lspconfig",
@@ -24,14 +48,7 @@ return {
 			}, -- NOTE: Must be loaded before dependants
 			"williamboman/mason-lspconfig.nvim",
 			"WhoIsSethDaniel/mason-tool-installer.nvim",
-			opts = {
-				servers = {
-					bacon_ls = {
-						enabled = diagnostics == "bacon-ls",
-					},
-					rust_analyzer = { enabled = false },
-				},
-			},
+
 			-- Useful status updates for LSP.
 			{ "j-hui/fidget.nvim", opts = {} },
 
@@ -164,16 +181,6 @@ return {
 				end,
 			})
 
-			-- Change diagnostic symbols in the sign column (gutter)
-			-- if vim.g.have_nerd_font then
-			--   local signs = { ERROR = '', WARN = '', INFO = '', HINT = '' }
-			--   local diagnostic_signs = {}
-			--   for type, icon in pairs(signs) do
-			--     diagnostic_signs[vim.diagnostic.severity[type]] = icon
-			--   end
-			--   vim.diagnostic.config { signs = { text = diagnostic_signs } }
-			-- end
-
 			-- LSP servers and clients are able to communicate to each other what features they support.
 			--  By default, Neovim doesn't support everything that is in the LSP specification.
 			--  When you add nvim-cmp, luasnip, etc. Neovim now has *more* capabilities.
@@ -235,6 +242,7 @@ return {
 				"stylua", -- Used to format Lua code
 				"clangd",
 				"css-lsp",
+				"jdtls", -- Java Language Server
 			})
 			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
 
@@ -243,6 +251,11 @@ return {
 				automatic_installation = true,
 				handlers = {
 					function(server_name)
+						-- Skip jdtls as it's handled by nvim-java
+						if server_name == "jdtls" then
+							return
+						end
+
 						local server = servers[server_name] or {}
 						-- This handles overriding only values explicitly passed
 						-- by the server configuration above. Useful when disabling
@@ -252,6 +265,24 @@ return {
 					end,
 				},
 			})
+
+			-- Setup jdtls with nvim-java (uses nvim 0.11 vim.lsp.config if available)
+			-- Note: nvim-java handles the actual setup, we just register the config
+			if vim.lsp.config then
+				-- Neovim 0.11+ style
+				vim.lsp.config.jdtls = {
+					cmd = { vim.fn.exepath("jdtls") },
+					root_markers = { ".git", "mvnw", "gradlew", "pom.xml", "build.gradle" },
+					filetypes = { "java" },
+					capabilities = capabilities,
+				}
+			else
+				-- Fallback for older Neovim versions
+				-- nvim-java handles the setup, so we just call the lspconfig setup
+				require("lspconfig").jdtls.setup({
+					capabilities = capabilities,
+				})
+			end
 		end,
 	},
 }
