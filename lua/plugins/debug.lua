@@ -1,16 +1,8 @@
--- debug.lua
---
--- Shows how to use the DAP plugin to debug your code.
---
--- Supports Go, Java, and other languages through mason-nvim-dap
-
 return {
-	-- NOTE: Yes, you can install new plugins here!
 	"mfussenegger/nvim-dap",
 
 	enabled = true,
 
-	-- NOTE: And you can specify dependencies as well
 	dependencies = {
 		-- Creates a beautiful debugger UI
 		"rcarriga/nvim-dap-ui",
@@ -89,15 +81,18 @@ return {
 
 			-- You can provide additional configuration to the handlers,
 			-- see mason-nvim-dap README for more information
-			handlers = {},
+			handlers = {
+				-- Skip java-debug-adapter and java-test as they're handled by nvim-java
+				["java-debug-adapter"] = function() end,
+				["java-test"] = function() end,
+			},
 
 			-- You'll need to check that you have the required things installed
 			-- online, please don't ask me how to install them :)
 			ensure_installed = {
 				-- Update this to ensure that you have the debuggers for the langs you want
 				"delve", -- Go debugger
-				"java-debug-adapter", -- Java debugger
-				"java-test", -- Java test runner
+				-- Java debugger is handled by nvim-java, not mason-nvim-dap
 			},
 		})
 

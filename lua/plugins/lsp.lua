@@ -14,26 +14,28 @@ return {
 	},
 	{ "Bilal2453/luvit-meta", lazy = true },
 	{
-		-- Java LSP/DAP plugin (loaded separately, before lspconfig)
 		"nvim-java/nvim-java",
-		ft = "java", -- Only load for Java files
 		dependencies = {
 			"nvim-java/lua-async-await",
-			"nvim-java/nvim-java-refactor",
 			"nvim-java/nvim-java-core",
 			"nvim-java/nvim-java-test",
 			"nvim-java/nvim-java-dap",
+			"nvim-java/nvim-java-refactor",
 			"MunifTanjim/nui.nvim",
 			"neovim/nvim-lspconfig",
 			"mfussenegger/nvim-dap",
+			{
+				"williamboman/mason.nvim",
+				opts = {
+					registries = {
+						"github:nvim-java/mason-registry",
+						"github:mason-org/mason-registry",
+					},
+				},
+			},
 		},
 		config = function()
-			require("java").setup({
-				-- Your nvim-java configuration options
-				jdk = {
-					auto_install = false, -- Set to true if you want auto JDK installation
-				},
-			})
+			require("java").setup()
 		end,
 	},
 	{
@@ -54,6 +56,9 @@ return {
 
 			-- Allows extra capabilities provided by nvim-cmp
 			"hrsh7th/cmp-nvim-lsp",
+
+			-- Ensure nvim-java loads before lspconfig
+			"nvim-java/nvim-java",
 		},
 		config = function()
 			-- Brief aside: **What is LSP?**
@@ -198,23 +203,50 @@ return {
 			--  - settings (table): Override the default settings passed when initializing the server.
 			--        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
 			local servers = {
-				-- clangd = {},
-				-- gopls = {},
-				-- pyright = {},
-				-- rust_analyzer = {},
-				-- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
-				--
-				-- Some languages (like typescript) have entire language plugins that can be useful:
-				--    https://github.com/pmizio/typescript-tools.nvim
-				--
-				-- But for many setups, the LSP (`ts_ls`) will work just fine
-				-- ts_ls = {},
-				--
+				-- Go
+				gopls = {
+					settings = {
+						gopls = {
+							analyses = {
+								unusedparams = true,
+							},
+							staticcheck = true,
+							gofumpt = true,
+						},
+					},
+				},
 
+				-- C/C++
+				clangd = {
+					cmd = {
+						"clangd",
+						"--background-index",
+						"--clang-tidy",
+						"--header-insertion=iwyu",
+						"--completion-style=detailed",
+						"--function-arg-placeholders",
+					},
+				},
+
+				-- JavaScript/TypeScript
+				ts_ls = {},
+
+				-- Rust
+				rust_analyzer = {
+					settings = {
+						["rust-analyzer"] = {
+							cargo = {
+								allFeatures = true,
+							},
+							checkOnSave = {
+								command = "clippy",
+							},
+						},
+					},
+				},
+
+				-- Lua
 				lua_ls = {
-					-- cmd = { ... },
-					-- filetypes = { ... },
-					-- capabilities = {},
 					settings = {
 						Lua = {
 							completion = {
@@ -240,15 +272,10 @@ return {
 			local ensure_installed = vim.tbl_keys(servers or {})
 			vim.list_extend(ensure_installed, {
 				"stylua", -- Used to format Lua code
-				"clangd",
-				"css-lsp",
-				"jdtls", -- Java Language Server
 			})
 			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
 
 			require("mason-lspconfig").setup({
-				ensure_installed = {},
-				automatic_installation = true,
 				handlers = {
 					function(server_name)
 						-- Skip jdtls as it's handled by nvim-java
@@ -261,29 +288,11 @@ return {
 						-- by the server configuration above. Useful when disabling
 						-- certain features of an LSP (for example, turning off formatting for ts_ls)
 						server.capabilities = vim.tbl_deep_extend("force", {}, capabilities, server.capabilities or {})
+
 						require("lspconfig")[server_name].setup(server)
 					end,
 				},
 			})
-
-			-- Setup jdtls with nvim-java (uses nvim 0.11 vim.lsp.config if available)
-			-- Note: nvim-java handles the actual setup, we just register the config
-			if vim.lsp.config then
-				-- Neovim 0.11+ style
-				vim.lsp.config.jdtls = {
-					cmd = { vim.fn.exepath("jdtls") },
-					root_markers = { ".git", "mvnw", "gradlew", "pom.xml", "build.gradle" },
-					filetypes = { "java" },
-					capabilities = capabilities,
-				}
-			else
-				-- Fallback for older Neovim versions
-				-- nvim-java handles the setup, so we just call the lspconfig setup
-				require("lspconfig").jdtls.setup({
-					capabilities = capabilities,
-				})
-			end
 		end,
 	},
 }
--- vim: ts=2 sts=2 sw=2 et
