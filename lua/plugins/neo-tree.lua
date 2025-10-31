@@ -21,6 +21,7 @@ return {
 					["\\"] = "close_window",
 				},
 			},
+			group_empty_dirs = true,
 		},
 	},
 }

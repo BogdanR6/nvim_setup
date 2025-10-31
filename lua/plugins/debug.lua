@@ -1,3 +1,50 @@
+-- DAP (Debug Adapter Protocol) Configuration
+--
+-- HOW TO USE THE DEBUGGER IN NEOVIM:
+--
+-- 1. SET BREAKPOINTS:
+--    - Place cursor on the line where you want to pause
+--    - Press <leader>b (usually Space + b)
+--    - A breakpoint indicator will appear in the sign column
+--    - Press <leader>b again to remove the breakpoint
+--
+-- 2. START DEBUGGING:
+--    - Press <F5> to start debugging
+--    - For Go: It will automatically start debugging the current package
+--    - The debugger will pause at your first breakpoint
+--
+-- 3. CONTROL EXECUTION:
+--    - <F5>  - Continue (run until next breakpoint)
+--    - <F1>  - Step Into (enter function calls)
+--    - <F2>  - Step Over (execute current line, don't enter functions)
+--    - <F3>  - Step Out (exit current function)
+--
+-- 4. VIEW DEBUG INFO:
+--    - Press <F7> to toggle the debug UI
+--    - The UI shows:
+--      * Variables and their values
+--      * Call stack
+--      * Breakpoints list
+--      * Watch expressions
+--      * Console output
+--
+-- 5. CONDITIONAL BREAKPOINTS:
+--    - Press <leader>B (capital B)
+--    - Enter a condition (e.g., "x > 10")
+--    - Debugger will only pause when condition is true
+--
+-- 6. STOP DEBUGGING:
+--    - Press the terminate button in the debug UI
+--    - Or close Neovim
+--
+-- EXAMPLE WORKFLOW (Go):
+--   1. Open a Go file
+--   2. Press <leader>b on a line to set a breakpoint
+--   3. Press <F5> to start debugging
+--   4. Press <F7> to see variables and stack
+--   5. Use <F2> to step through code
+--   6. Hover over variables to see their values
+
 return {
 	"mfussenegger/nvim-dap",
 
@@ -9,6 +56,8 @@ return {
 
 		-- Required dependency for nvim-dap-ui
 		"nvim-neotest/nvim-nio",
+
+		"theHamsta/nvim-dap-virtual-text",
 
 		-- Installs the debug adapters for you
 		"williamboman/mason.nvim",
@@ -69,10 +118,46 @@ return {
 			end,
 			desc = "Debug: See last session result.",
 		},
+		{
+			"<leader>da",
+			function()
+				local dap = require("dap")
+				local args_string = vim.fn.input("Launch args (space-separated): ")
+				local args = vim.split(args_string, " ", { trimempty = true })
+
+				for _, config in ipairs(dap.configurations.go) do
+					if config.request == "launch" then
+						config.args = args
+					end
+				end
+
+				print("Set launch args: " .. vim.inspect(args))
+			end,
+			desc = "Debug: Set launch arguments",
+		},
 	},
 	config = function()
 		local dap = require("dap")
 		local dapui = require("dapui")
+
+		-- Helper for setting launch arguments
+		local dap_common = {}
+
+		function dap_common.set_launch_args(lang, args)
+			if dap.configurations[lang] == nil then
+				error(("Configuration for %s is not defined!"):format(lang))
+			end
+
+			if type(args) ~= "table" and args ~= nil then
+				error(("Invalid arguments %s of type %s specified! Must be a table or nil"):format(args, type(args)))
+			end
+
+			for _, config in ipairs(dap.configurations[lang]) do
+				if config.request == "launch" then
+					config.args = args
+				end
+			end
+		end
 
 		require("mason-nvim-dap").setup({
 			-- Makes a best effort to setup the various debuggers with
@@ -81,18 +166,13 @@ return {
 
 			-- You can provide additional configuration to the handlers,
 			-- see mason-nvim-dap README for more information
-			handlers = {
-				-- Skip java-debug-adapter and java-test as they're handled by nvim-java
-				["java-debug-adapter"] = function() end,
-				["java-test"] = function() end,
-			},
+			handlers = {},
 
 			-- You'll need to check that you have the required things installed
 			-- online, please don't ask me how to install them :)
 			ensure_installed = {
 				-- Update this to ensure that you have the debuggers for the langs you want
 				"delve", -- Go debugger
-				-- Java debugger is handled by nvim-java, not mason-nvim-dap
 			},
 		})
 
@@ -119,17 +199,24 @@ return {
 		})
 
 		-- Change breakpoint icons
-		-- vim.api.nvim_set_hl(0, 'DapBreak', { fg = '#e51400' })
-		-- vim.api.nvim_set_hl(0, 'DapStop', { fg = '#ffcc00' })
-		-- local breakpoint_icons = vim.g.have_nerd_font
-		--     and { Breakpoint = '', BreakpointCondition = '', BreakpointRejected = '', LogPoint = '', Stopped = '' }
-		--   or { Breakpoint = '●', BreakpointCondition = '⊜', BreakpointRejected = '⊘', LogPoint = '◆', Stopped = '⭔' }
-		-- for type, icon in pairs(breakpoint_icons) do
-		--   local tp = 'Dap' .. type
-		--   local hl = (type == 'Stopped') and 'DapStop' or 'DapBreak'
-		--   vim.fn.sign_define(tp, { text = icon, texthl = hl, numhl = hl })
-		-- end
+		vim.api.nvim_set_hl(0, "DapBreak", { fg = "#e51400" })
+		vim.api.nvim_set_hl(0, "DapStop", { fg = "#ffcc00" })
+		local breakpoint_icons = vim.g.have_nerd_font
+				and { Breakpoint = "", BreakpointCondition = "", BreakpointRejected = "", LogPoint = "", Stopped = "" }
+			or {
+				Breakpoint = "●",
+				BreakpointCondition = "⊜",
+				BreakpointRejected = "⊘",
+				LogPoint = "◆",
+				Stopped = "⭔",
+			}
+		for type, icon in pairs(breakpoint_icons) do
+			local tp = "Dap" .. type
+			local hl = (type == "Stopped") and "DapStop" or "DapBreak"
+			vim.fn.sign_define(tp, { text = icon, texthl = hl, numhl = hl })
+		end
 
+		-- Automatically open/close debug UI when debugging starts/stops
 		dap.listeners.after.event_initialized["dapui_config"] = dapui.open
 		dap.listeners.before.event_terminated["dapui_config"] = dapui.close
 		dap.listeners.before.event_exited["dapui_config"] = dapui.close
@@ -142,8 +229,5 @@ return {
 				detached = vim.fn.has("win32") == 0,
 			},
 		})
-
-		-- Java debugging is automatically configured by nvim-java
-		-- No additional setup needed here as nvim-java handles DAP configuration
 	end,
 }

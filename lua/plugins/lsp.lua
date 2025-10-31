@@ -39,32 +39,6 @@ return {
 	},
 	{ "Bilal2453/luvit-meta", lazy = true },
 	{
-		-- `nvim-java` configures Java LSP
-		"nvim-java/nvim-java",
-		dependencies = {
-			"nvim-java/lua-async-await",
-			"nvim-java/nvim-java-core",
-			"nvim-java/nvim-java-test",
-			"nvim-java/nvim-java-dap",
-			"nvim-java/nvim-java-refactor",
-			"MunifTanjim/nui.nvim",
-			"neovim/nvim-lspconfig",
-			"mfussenegger/nvim-dap",
-			{
-				"williamboman/mason.nvim",
-				opts = {
-					registries = {
-						"github:nvim-java/mason-registry",
-						"github:mason-org/mason-registry",
-					},
-				},
-			},
-		},
-		config = function()
-			require("java").setup()
-		end,
-	},
-	{
 		-- Main LSP Configuration
 		"neovim/nvim-lspconfig",
 		dependencies = {
@@ -82,9 +56,6 @@ return {
 
 			-- Allows extra capabilities provided by nvim-cmp
 			"hrsh7th/cmp-nvim-lsp",
-
-			-- Ensure nvim-java loads before lspconfig
-			"nvim-java/nvim-java",
 		},
 		config = function()
 			vim.api.nvim_create_autocmd("LspAttach", {
@@ -177,6 +148,17 @@ return {
 							vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
 						end, "[T]oggle Inlay [H]ints")
 					end
+
+					-- Auto-format C/C++ files with clang-format on save
+					if client.name == "clangd" then
+						vim.api.nvim_create_autocmd("BufWritePre", {
+							buffer = event.buf,
+							group = vim.api.nvim_create_augroup("clangd-format-on-save", { clear = false }),
+							callback = function()
+								vim.lsp.buf.format({ async = false })
+							end,
+						})
+					end
 				end,
 			})
 
@@ -266,17 +248,13 @@ return {
 			local ensure_installed = vim.tbl_keys(servers or {})
 			vim.list_extend(ensure_installed, {
 				"stylua", -- Used to format Lua code
+				"clang-format", -- Used to format C/C++ code
 			})
 			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
 
 			require("mason-lspconfig").setup({
 				handlers = {
 					function(server_name)
-						-- Skip jdtls as it's handled by nvim-java
-						if server_name == "jdtls" then
-							return
-						end
-
 						local server = servers[server_name] or {}
 						-- This handles overriding only values explicitly passed
 						-- by the server configuration above. Useful when disabling
@@ -287,9 +265,6 @@ return {
 					end,
 				},
 			})
-
-			-- Setup jdtls after mason-lspconfig
-			require("lspconfig").jdtls.setup({})
 		end,
 	},
 }
